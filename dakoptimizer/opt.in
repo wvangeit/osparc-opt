@@ -1,0 +1,53 @@
+# Dakota configuration file
+
+environment
+    tabular_data
+        tabular_data_file
+            "opt.dat"
+    results_output
+        hdf5
+        interface_selection
+            all
+      
+method
+    moga
+        max_function_evaluations 500
+        population_size 
+            10
+        scaling
+    output debug
+
+model
+    single
+
+variables
+    continuous_design
+        2
+        lower_bounds     
+            0.05     
+            0.01
+        upper_bounds      
+            0.125      
+            0.075
+        descriptors       
+            'x0'     
+            'x1'
+
+interface
+    batch
+    analysis_drivers
+        "driver.py settings.json"
+        fork
+        parameters_file
+            "params.dak.in"
+        results_file
+            "objs.dak.out"
+
+responses
+    objective_functions
+        2
+        descriptors
+            'f1' 
+            'f2'
+    no_gradients
+    no_hessians
