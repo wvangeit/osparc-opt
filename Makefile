@@ -1,8 +1,12 @@
 SHELL:=/bin/bash
 
-all: map evaluator1 evaluator2 dakoptimizer
+all: 
 
-iodirs:
+daktest: map evaluator1 evaluator2 dakoptimizer
+
+bptest: map evaluator1 evaluator2 bpoptimizer
+
+iodirs: clean
 	mkdir -p test-inputs
 	mkdir -p test-outputs
 	mkdir -p test-outputs/map
@@ -31,6 +35,11 @@ dakoptimizer: iodirs
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
 	python main.py
+bpoptimizer: iodirs
+	cd bpoptimizer && \
+	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
+	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
+	python main.py
 evaluator1: iodirs
 	cd evaluator && \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/eval1 \
@@ -52,4 +61,3 @@ clean:
 	rm -rf test-outputs
 	rm -rf dakoptimizer/params.dak.in
 	rm -rf dakoptimizer/params.dak.out
-	

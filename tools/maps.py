@@ -2,16 +2,17 @@ import time
 import json
 import logging
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("Tools")
 
-POLLING_WAIT = .1  # second
+POLLING_WAIT = 0.1  # second
 
 
 class oSparcFileMap:
     def __init__(self, input_file_path, output_file_path):
         self.input_file_path = input_file_path
         self.output_file_path = output_file_path
+        self.status = "running"
 
     def evaluate(self, params):
 
@@ -22,20 +23,23 @@ class oSparcFileMap:
             f"Writing params list {params} to {self.input_file_path.resolve()}"
         )
 
-        self.input_file_path.write_text(json.dumps(params, indent=4))
+        payload = {"command": "run", "params": params}
+
+        self.input_file_path.write_text(json.dumps(payload, indent=4))
 
         poll_counter = 0
 
         while True:
+            if self.status == "stopping":
+                break
             if poll_counter % 20 == 0:
-                logger.info(
+                logger.debug(
                     "Waiting for objectives file: "
                     f"{self.output_file_path.resolve()}"
                 )
 
             if self.output_file_path.exists():
-                with open(self.output_file_path) as output_file:
-                    objs = json.load(output_file)
+                objs = json.loads(self.output_file_path.read_text())
                 self.output_file_path.unlink(missing_ok=True)
                 self.input_file_path.unlink(missing_ok=True)
                 logging.debug(f"Filemap returning objectives {objs}")
@@ -49,3 +53,9 @@ class oSparcFileMap:
         params = map_input[1]
 
         return self.evaluate(params)
+
+    def __del__(self):
+        payload = {"command": "stop"}
+        self.input_file_path.write_text(json.dumps(payload, indent=4))
+
+        self.status = "stopping"

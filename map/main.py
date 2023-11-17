@@ -6,9 +6,9 @@ import uuid
 import logging
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("paramstest main")
+logger = logging.getLogger("Map")
 
-DEFAULT_POLLING_WAIT = .1  # seconds
+DEFAULT_POLLING_WAIT = 0.1  # seconds
 
 
 def main():
@@ -44,29 +44,40 @@ class ParamCreator:
         self.finished_tasks = []
 
     def start(self, polling_wait=DEFAULT_POLLING_WAIT):
-        logging.info("Starting mapping function")
+        logger.info("Starting mapping function")
 
         self.init_master_file()
         self.init_engine_files()
         polling_counter = 0
         while True:
+            if self.status == "stopping":
+                break
             if polling_counter % 20 == 0:
-                logging.info(
+                logger.debug(
                     f"Checking map file at {self.map_input_path.resolve()}"
                 )
-                logging.info(
+                logger.debug(
                     f"To run tasks: {len(self.torun_tasks)}, running tasks:"
                     f" {len(self.running_tasks)}"
                 )
             self.check_map_files()
 
             if polling_counter % 20 == 0:
-                logging.info("Checking engine files ...")
+                logger.debug("Checking engine files ...")
             self.check_engine_files()
 
             time.sleep(polling_wait)
 
             polling_counter += 1
+
+        self.stop_engines()
+
+    def stop_engines(self):
+        master_dict = self.read_master_dict()
+        for engine_id in self.engine_ids:
+            master_dict["engines"][engine_id] = {"task": {"command": "stop"}}
+
+        self.write_master_dict(master_dict)
 
     def init_engine_files(self):
 
@@ -76,13 +87,11 @@ class ParamCreator:
                 # Deleting engine file, if engine exists it will recreate it
                 engine_fn.unlink()
 
-    def populate_tasklist(self):
+    def populate_tasklist(self, map_input):
         self.torun_tasks = []
         self.running_tasks = []
         self.finished_tasks = []
 
-        with open(self.map_input_path) as map_input_file:
-            map_input = json.load(map_input_file)
         self.map_input_path.unlink()
 
         for task_id, param_values in enumerate(map_input):
@@ -93,7 +102,7 @@ class ParamCreator:
             task = {"command": "run", "task_id": task_id, "payload": params}
             self.torun_tasks.append(task)
 
-        logging.info(f"Created tasks: {self.torun_tasks}")
+        logger.info(f"Created tasks: {self.torun_tasks}")
 
     def write_map_output(self):
         objs = []
@@ -113,11 +122,20 @@ class ParamCreator:
 
     def check_map_files(self):
 
-        if self.status == "ready":
-            if self.map_input_path.exists():
-                self.populate_tasklist()
-                self.status = "computing"
-        elif (
+        if self.map_input_path.exists():
+            map_payload = json.loads(self.map_input_path.read_text())
+            logger.debug(f"Map received payload: {map_payload}")
+            command = map_payload["command"]
+            if command == "stop":
+                self.status = "stopping"
+            elif command == "run":
+                if self.status == "ready":
+                    self.populate_tasklist(map_payload["params"])
+                    self.status = "computing"
+            else:
+                raise ValueError(f"Received unknown command: {map}")
+
+        if (
             self.status == "computing"
             and len(self.torun_tasks) == 0
             and len(self.running_tasks) == 0
@@ -157,7 +175,7 @@ class ParamCreator:
                 self.finished_tasks.append(task)
                 self.running_tasks.remove(task)
 
-        logging.info(f"Received result {payload} from {engine_info['id']}")
+        logger.debug(f"Received result {payload} from {engine_info['id']}")
 
     def set_engine_ready(self, engine_id):
         master_dict = self.read_master_dict()
@@ -172,7 +190,7 @@ class ParamCreator:
         with open(engine_fn) as engine_file:
             engine_info = json.load(engine_file)
 
-        logging.info(f"Master received engine info: {engine_info}")
+        logger.debug(f"Master received engine info: {engine_info}")
         return engine_info
 
     def register_engine(self, engine_info):
@@ -197,7 +215,7 @@ class ParamCreator:
         master_dict["engines"][engine_id] = {}
         self.write_master_dict(master_dict)
 
-        logging.info(f"Registered engine: {engine_id}")
+        logger.info(f"Registered engine: {engine_id}")
 
     def init_master_file(self):
         master_dict = {"engines": {}, "id": self.id}
@@ -213,7 +231,7 @@ class ParamCreator:
         with open(self.master_file_path, "w") as master_file:
             json.dump(master_dict, master_file, indent=4)
 
-        logging.info(f"Created new master.json: {master_dict}")
+        logger.debug(f"Created new master.json: {master_dict}")
 
     def submit_task(self, engine_dict):
         """Create dict with run info"""
@@ -235,7 +253,7 @@ class ParamCreator:
         self.write_master_dict(master_dict)
 
         self.engine_submitted[engine_id] = True
-        logger.info(f"Sent task {task} to engine {engine_id}")
+        logger.debug(f"Sent task {task} to engine {engine_id}")
 
 
 if __name__ == "__main__":

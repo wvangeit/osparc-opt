@@ -1,5 +1,7 @@
 import os
-import pathlib
+import sys
+
+from pathlib import Path
 
 import bluepyopt as bpopt
 
@@ -8,24 +10,27 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Optimizer")
 
-POLLING_WAIT = 1  # second
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+import tools.maps
+
+POLLING_WAIT = 0.1  # second
 
 
 def main():
     """Main"""
 
-    main_inputs_dir = pathlib.Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
-    main_outputs_dir = pathlib.Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
+    main_inputs_dir = Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
+    main_outputs_dir = Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
 
     objs_file_path = main_inputs_dir / "input_2" / "objs.json"
     params_file_path = main_outputs_dir / "output_1" / "params.json"
 
-    map_function = tools.maps.FileMap(
-        params_file_path, objs_file_path
-    ).map_function
+    map_object = tools.maps.oSparcFileMap(params_file_path, objs_file_path)
+    map_function = map_object.map_function
 
     optimizer = Optimizer(map=map_function)
     final_pop = optimizer.start()
+
     return final_pop
 
 

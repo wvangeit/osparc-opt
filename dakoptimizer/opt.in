@@ -11,7 +11,7 @@ environment
       
 method
     moga
-        max_function_evaluations 500
+        max_function_evaluations 50
         population_size 
             10
         scaling
@@ -35,13 +35,16 @@ variables
 
 interface
     batch
-    analysis_drivers
-        "driver.py settings.json"
-        fork
-        parameters_file
-            "params.dak.in"
-        results_file
-            "objs.dak.out"
+    python
+    analysis_driver
+        "map"
+    # analysis_drivers
+    #    "driver.py settings.json"
+    #    fork
+    #    parameters_file
+    #        "params.dak.in"
+    #    results_file
+    #        "objs.dak.out"
 
 responses
     objective_functions

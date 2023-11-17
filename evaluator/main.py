@@ -7,10 +7,10 @@ import logging
 
 import bluepyopt.ephys as ephys
 
-DEFAULT_POLLING_WAIT = .1  # seconds
+DEFAULT_POLLING_WAIT = 0.1  # seconds
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("evaluator")
+logger = logging.getLogger("Evaluator")
 
 
 def main():
@@ -40,8 +40,8 @@ class EvalEngine:
         """Start engine"""
 
         logger.info(f"Starting engine {self.id}")
-        logger.info(f"Input 2 directory: {self.input2_dir}")
-        logger.info(f"Output 1 directory: {self.output1_dir}")
+        logger.debug(f"Input 2 directory: {self.input2_dir}")
+        logger.debug(f"Output 1 directory: {self.output1_dir}")
 
         self.create_engine_file()
 
@@ -85,7 +85,7 @@ class EvalEngine:
     def watch_master_file(self) -> None:
 
         while True:
-            logger.info(
+            logger.debug(
                 f"Engine {self.id}: Checking for master file at "
                 f"{self.master_file_path}"
             )
@@ -95,31 +95,33 @@ class EvalEngine:
                     if "task" in master_dict["engines"][self.id]:
                         task_dict = master_dict["engines"][self.id]["task"]
 
-                        if (
+                        if task_dict["command"] == "stop":
+                            break
+                        elif (
                             task_dict["command"] == "run"
                             and self.status == "ready"
                         ):
                             self.status = "busy"
-                            logger.info(
+                            logger.debug(
                                 f"Engine {self.id}: Received task:"
                                 f" {task_dict}",
                             )
                             result = self.run_payload(task_dict["payload"])
-                            logger.info(
+                            logger.debug(
                                 f"Engine {self.id}: "
                                 f"Calculated score: {result}",
                             )
                             self.submit_result(task_dict["task_id"], result)
                             self.status = "submitted"
                         elif task_dict["command"] == "get ready":
-                            logger.info(
+                            logger.debug(
                                 f"Engine {self.id}: Getting ready",
                             )
                             self.status = "ready"
                             self.create_engine_file()
 
                 else:
-                    logger.info(
+                    logger.debug(
                         f"Engine {self.id}: Didn't find any tasks for me"
                     )
 
@@ -129,10 +131,10 @@ class EvalEngine:
 def process_inputs(input_params_path, output_scores_path):
     """Process new inputs"""
 
-    logger.info("Fetching input parameters:")
+    logger.debug("Fetching input parameters:")
     with open(input_params_path, "r") as input_params_file:
         input_params = json.load(input_params_file)
-    logger.info(f"Parameters found are: {input_params}")
+    logger.debug(f"Parameters found are: {input_params}")
 
     scores = run_eval(input_params)
 
@@ -141,11 +143,11 @@ def process_inputs(input_params_path, output_scores_path):
 
 
 def run_eval(input_params):
-    logger.info("Starting simplecell")
+    logger.debug("Starting simplecell")
 
-    logging.debug("I am running in the directory: ", os.getcwd())
+    logger.debug("I am running in the directory: ", os.getcwd())
 
-    logging.debug("Setting up simple cell model")
+    logger.debug("Setting up simple cell model")
 
     morph = ephys.morphologies.NrnFileMorphology("simple.swc")
 
@@ -191,13 +193,13 @@ def run_eval(input_params):
         params=[cm_param, gnabar_param, gkbar_param],
     )
 
-    logging.debug("#############################")
-    logging.debug("Simple neuron has been set up")
-    logging.debug("#############################")
+    logger.debug("#############################")
+    logger.debug("Simple neuron has been set up")
+    logger.debug("#############################")
 
-    logging.debug(simple_cell)
+    logger.debug(simple_cell)
 
-    logging.debug("Setting up stimulation protocols")
+    logger.debug("Setting up stimulation protocols")
     soma_loc = ephys.locations.NrnSeclistCompLocation(
         name="soma", seclist_name="somatic", sec_index=0, comp_x=0.5
     )
@@ -221,13 +223,13 @@ def run_eval(input_params):
         "twostep", protocols=sweep_protocols
     )
 
-    logging.debug("#######################################")
-    logging.debug("Stimulation protocols have been set up ")
-    logging.debug("#######################################")
+    logger.debug("#######################################")
+    logger.debug("Stimulation protocols have been set up ")
+    logger.debug("#######################################")
 
-    logging.debug(twostep_protocol)
+    logger.debug(twostep_protocol)
 
-    logging.debug("Setting up objectives")
+    logger.debug("Setting up objectives")
     efel_feature_means = {
         "step1": {"Spikecount": 1},
         "step2": {"Spikecount": 5},
@@ -256,11 +258,11 @@ def run_eval(input_params):
             )
             objectives.append(objective)
 
-    logging.debug("############################")
-    logging.debug("Objectives have been set up ")
-    logging.debug("############################")
+    logger.debug("############################")
+    logger.debug("Objectives have been set up ")
+    logger.debug("############################")
 
-    logging.debug("Setting up fitness calculator")
+    logger.debug("Setting up fitness calculator")
 
     score_calc = ephys.objectivescalculators.ObjectivesCalculator(objectives)
 
@@ -274,17 +276,17 @@ def run_eval(input_params):
         sim=nrn,
     )
 
-    logging.debug("####################################")
-    logging.debug("Fitness calculator have been set up ")
-    logging.debug("####################################")
+    logger.debug("####################################")
+    logger.debug("Fitness calculator have been set up ")
+    logger.debug("####################################")
 
-    logging.debug("Running test evaluation:")
+    logger.debug("Running test evaluation:")
     scores = cell_evaluator.evaluate_with_dicts(input_params)
-    logging.info(f"Scores: {scores}")
+    logger.debug(f"Scores: {scores}")
 
-    logging.debug("###############################")
-    logging.debug("Test evaluation was successful ")
-    logging.debug("###############################")
+    logger.debug("###############################")
+    logger.debug("Test evaluation was successful ")
+    logger.debug("###############################")
 
     return scores
 

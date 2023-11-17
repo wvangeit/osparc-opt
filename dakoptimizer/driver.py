@@ -76,15 +76,13 @@ def start():
 
     map_settings = settings["map_function"]
     map_object = tools.maps.oSparcFileMap(
-        Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
-        / "output_1"
+        Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"]) / 'output_1'
         / Path(map_settings["input_file"]),
-        Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
-        / "input_2"
+        Path(os.environ["DY_SIDECAR_PATH_INPUTS"]) / 'input_2'
         / Path(map_settings["output_file"]),
     )
 
-    run_sim(
+    run_evaluation(
         py_eval,
         args.params_path,
         args.objs_path,
@@ -109,7 +107,7 @@ def write_dakota_results(outdata, outfile, objs_names):
     dataframe.to_csv(outfile, sep=" ", index=False, header=False)
 
 
-def run_sim(
+def run_evaluation(
     py_eval,
     infile,
     outfile,
