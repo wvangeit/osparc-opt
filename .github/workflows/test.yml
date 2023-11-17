@@ -7,12 +7,14 @@ jobs:
     test-dak:
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v4
             - run:
                 make test-dak -j
 
     test-bp:
         runs-on: ubuntu-latest
         steps:
+            - uses: actions/checkout@v4
             - run:
                 make test-bp -j
 
