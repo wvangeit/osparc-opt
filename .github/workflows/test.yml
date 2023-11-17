@@ -1,8 +1,15 @@
 name: Test
 
 jobs:
-    test-dakota:
-        make test-dak -j
+    test-dak:
+        runs-on: ubuntu-latest
+        steps:
+            - run:
+                make test-dak -j
 
-    test-bpopt:
-        make test-bp -j
+    test-bp:
+        runs-on: ubuntu-latest
+        steps:
+            - run:
+                make test-bp -j
+
