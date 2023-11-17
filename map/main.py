@@ -115,8 +115,7 @@ class ParamCreator:
             ]
             objs.append(obj)
 
-        with open(self.map_output_path, "w") as map_output_file:
-            json.dump(objs, map_output_file, indent=4)
+            self.map_output_path.write_text(json.dumps(objs, indent=4))
 
         self.finished_tasks = []
 
@@ -187,8 +186,7 @@ class ParamCreator:
         self.engine_submitted[engine_id] = False
 
     def get_engine_info(self, engine_fn):
-        with open(engine_fn) as engine_file:
-            engine_info = json.load(engine_file)
+        engine_info = json.loads(engine_fn.read_text())
 
         logger.debug(f"Master received engine info: {engine_info}")
         return engine_info
@@ -222,14 +220,12 @@ class ParamCreator:
         self.write_master_dict(master_dict)
 
     def read_master_dict(self):
-        with open(self.master_file_path) as master_file:
-            master_dict = json.load(master_file)
+        master_dict = json.loads(self.master_file_path.read_text())
 
         return master_dict
 
     def write_master_dict(self, master_dict):
-        with open(self.master_file_path, "w") as master_file:
-            json.dump(master_dict, master_file, indent=4)
+        self.master_file_path.write_text(json.dumps(master_dict, indent=4))
 
         logger.debug(f"Created new master.json: {master_dict}")
 

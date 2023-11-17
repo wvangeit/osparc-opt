@@ -2,9 +2,9 @@ SHELL:=/bin/bash
 
 all: 
 
-daktest: map evaluator1 evaluator2 dakoptimizer
+test-dak: map evaluator1 evaluator2 dakoptimizer
 
-bptest: map evaluator1 evaluator2 bpoptimizer
+test-bp: map evaluator1 evaluator2 bpoptimizer
 
 iodirs: clean
 	mkdir -p test-inputs

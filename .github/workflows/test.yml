@@ -1,0 +1,8 @@
+name: Test
+
+jobs:
+    test-dakota:
+        make test-dak -j
+
+    test-bpopt:
+        make test-bp -j

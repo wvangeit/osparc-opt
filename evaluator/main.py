@@ -52,8 +52,7 @@ class EvalEngine:
 
         engine_dict = {"id": self.id, "status": self.status}
 
-        with open(self.engine_file_path, "w") as engine_file:
-            json.dump(engine_dict, engine_file, indent=2)
+        self.engine_file_path.write_text(json.dumps(engine_dict, indent=2))
 
     def submit_result(self, task_id, result) -> None:
         """Create engine file"""
@@ -68,8 +67,7 @@ class EvalEngine:
         self.engine_file_path.write_text(json.dumps(engine_dict, indent=2))
 
     def read_master_dict(self) -> dict:
-        with open(self.master_file_path) as master_file:
-            master_dict = json.load(master_file)
+        master_dict = json.loads(self.master_file_path.read_text())
 
         return master_dict
 
@@ -132,14 +130,12 @@ def process_inputs(input_params_path, output_scores_path):
     """Process new inputs"""
 
     logger.debug("Fetching input parameters:")
-    with open(input_params_path, "r") as input_params_file:
-        input_params = json.load(input_params_file)
+    input_params = json.loads(input_params_path.read_text())
     logger.debug(f"Parameters found are: {input_params}")
 
     scores = run_eval(input_params)
 
-    with open(output_scores_path, "w") as scores_file:
-        json.dump(scores, scores_file)
+    output_scores_path.write_text(json.dumps(scores))
 
 
 def run_eval(input_params):
