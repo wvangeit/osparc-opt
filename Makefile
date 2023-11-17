@@ -29,32 +29,35 @@ iodirs: clean
 	ln -rfs test-outputs/eval1/output_1 test-inputs/map/input_3
 	ln -rfs test-outputs/eval2/output_1 test-inputs/map/input_4
 
-dakoptimizer: iodirs
+dakoptimizer: iodirs requirements
 	cd dakoptimizer && \
 	module load litis/dakota && \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
 	python main.py
-bpoptimizer: iodirs
+bpoptimizer: iodirs requirements
 	cd bpoptimizer && \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
 	python main.py
-evaluator1: iodirs
+evaluator1: iodirs requirements
 	cd evaluator && \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/eval1 \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/eval1 \
 	python main.py
-evaluator2: iodirs
+evaluator2: iodirs requirements
 	cd evaluator && \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/eval2 \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/eval2 \
 	python main.py
-map: iodirs
+map: iodirs requirements
 	cd map && \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/map \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/map \
 	python main.py 
+
+requirements:
+	pip install -qr requirements.txt
 
 clean:
 	rm -rf test-inputs
