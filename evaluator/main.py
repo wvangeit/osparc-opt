@@ -37,16 +37,28 @@ class EvalEngine:
         self.engine_file_path = self.output1_dir / "engine.json"
         self.status = "connecting"
         self.polling_wait = polling_wait
+        self.transmitter = None
 
     def start(self) -> None:
         """Start engine."""
 
-        # logger.debug(f"Input 2 directory: {self.input2_dir}")
-        # logger.debug(f"Output 1 directory: {self.output1_dir}")
-
         self.create_engine_file()
 
-        self.watch_master_file()
+        while True:
+            if self.status == "stopping":
+                break
+
+            self.check_master_file()
+            self.check_transmitter()
+
+            time.sleep(self.polling_wait)
+
+        self.stop_transmitter()
+
+    def stop_transmitter(self):
+        if self.transmitter is not None:
+            self.transmitter.stop_background_sync()
+            self.transmitter = None
 
     def create_transmitter(self, remote_host, remote_port):
         self.eval_manifest = oc.CommandManifest(
@@ -77,17 +89,19 @@ class EvalEngine:
 
         self.status = "ready"
         self.submit_status()
-        while self.status == "ready":
-            for command in self.transmitter.get_incoming_requests():
-                logger.debug(f"Engine {self.id} received command: {command}")
-                if command.action == self.eval_manifest.action:
-                    params = command.params["params"]
-                    objs = run_eval(params)
-                    self.transmitter.reply_to_command(
-                        request_id=command.request_id, payload=objs
-                    )
 
-        paired_transmitter.stop_background_sync()
+    def check_transmitter(self):
+        if self.transmitter is None:
+            return
+
+        for command in self.transmitter.get_incoming_requests():
+            logger.debug(f"Engine {self.id} received command: {command}")
+            if command.action == self.eval_manifest.action:
+                params = command.params["params"]
+                objs = run_eval(params)
+                self.transmitter.reply_to_command(
+                    request_id=command.request_id, payload=objs
+                )
 
     def create_engine_file(self) -> None:
         """Create engine file."""
@@ -144,52 +158,31 @@ class EvalEngine:
 
         return run_eval(payload)
 
-    def watch_master_file(self) -> None:
-        while True:
-            logger.debug(
-                f"Engine {self.id}: Checking for master file at "
-                f"{self.master_file_path}"
-            )
-            if self.master_file_path.exists():
-                master_dict = self.read_master_dict()
-                if self.id in master_dict["engines"]:
-                    if "task" in master_dict["engines"][self.id]:
-                        task_dict = master_dict["engines"][self.id]["task"]
-                        command = task_dict["command"]
-                        if command == "stop":
-                            self.stop_transmitter()
+    def check_master_file(self) -> None:
+        logger.debug(
+            f"Engine {self.id}: Checking for master file at "
+            f"{self.master_file_path}"
+        )
 
-                        elif (
-                            command == "connect"
-                            and self.status == "connecting"
-                        ):
+        if self.master_file_path.exists():
+            master_dict = self.read_master_dict()
+            if self.id in master_dict["engines"]:
+                if "task" in master_dict["engines"][self.id]:
+                    task_dict = master_dict["engines"][self.id]["task"]
+                    command = task_dict["command"]
+                    if command == "stop":
+                        self.status = "stopping"
+                    elif command == "connect":
+                        if self.status == "connecting":
                             payload = task_dict["payload"]
 
                             self.start_transmitter(
                                 payload["master_host"], payload["master_port"]
                             )
-                        else:
-                            raise ValueError(
-                                f"Received unknown command: {command}"
-                            )
-                else:
-                    logger.debug(
-                        f"Engine {self.id}: Didn't find any tasks for me"
-                    )
-
-            time.sleep(self.polling_wait)
-
-
-def process_inputs(input_params_path, output_scores_path):
-    """Process new inputs."""
-
-    logger.debug("Fetching input parameters:")
-    input_params = json.loads(input_params_path.read_text())
-    logger.debug(f"Parameters found are: {input_params}")
-
-    scores = run_eval(input_params)
-
-    output_scores_path.write_text(json.dumps(scores))
+                    else:
+                        raise ValueError(
+                            f"Received unknown command: {command}"
+                        )
 
 
 def run_eval(input_params):

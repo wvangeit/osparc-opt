@@ -100,10 +100,10 @@ class oSparcMap:
         if self.caller_file_path.exists():
             content = json.loads(self.caller_file_path.read_text())
             command = content["command"]
-            payload = content["payload"]
             if command == "stop":
                 self.status = "stopping"
             elif command == "connect":
+                payload = content["payload"]
                 if self.status == "connecting":
                     self.start_caller_transmitter(
                         payload["caller_host"], payload["caller_port"]

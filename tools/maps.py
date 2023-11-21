@@ -96,27 +96,6 @@ class oSparcFileMap:
         logger.info(f"Evaluation results: {objs_set}")
 
         return objs_set
-        """poll_counter = 0.
-
-        while True:
-            if self.status == "stopping":
-                break
-            if poll_counter % 20 == 0:
-                logger.debug(
-                    "Waiting for objectives file: "
-                    f"{self.caller_file_path.resolve()}"
-                )
-
-            if self.caller_file_path.exists():
-                objs = json.loads(self.caller_file_path.read_text())
-                self.map_file_path.unlink(missing_ok=True)
-                self.caller_file_path.unlink(missing_ok=True)
-                logging.debug(f"Filemap returning objectives {objs}")
-                return objs
-            else:
-                time.sleep(POLLING_WAIT)
-                poll_counter += 1
-        """
 
     def map_function(self, *map_input):
         _ = map_input[0]
@@ -126,6 +105,9 @@ class oSparcFileMap:
 
     def __del__(self):
         payload = {"command": "stop"}
-        self.map_file_path.write_text(json.dumps(payload, indent=4))
+        if self.map_transmitter is not None:
+            self.map_transmitter.stop_background_sync()
+
+        self.caller_file_path.write_text(json.dumps(payload, indent=4))
 
         self.status = "stopping"
