@@ -12,7 +12,7 @@ POLLING_WAIT = 0.1  # second
 
 
 class oSparcFileMap:
-    def __init__(self, caller_file_path, map_file_path):
+    def __init__(self, map_file_path, caller_file_path):
         logger.info("Creating caller map")
         self.caller_file_path = caller_file_path
         self.map_file_path = map_file_path
