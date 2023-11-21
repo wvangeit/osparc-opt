@@ -22,8 +22,8 @@ def main():
     main_inputs_dir = Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
     main_outputs_dir = Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
 
-    objs_file_path = main_inputs_dir / "input_2" / "objs.json"
-    params_file_path = main_outputs_dir / "output_1" / "params.json"
+    objs_file_path = main_inputs_dir / "input_2" / "map.json"
+    params_file_path = main_outputs_dir / "output_1" / "caller.json"
 
     map_object = tools.maps.oSparcFileMap(params_file_path, objs_file_path)
     map_function = map_object.map_function

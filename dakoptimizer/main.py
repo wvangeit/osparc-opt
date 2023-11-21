@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 import dakota.environment as dakenv
 from pathlib import Path
@@ -15,8 +15,8 @@ def main():
     main_inputs_dir = Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
     main_outputs_dir = Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
 
-    objs_file_path = main_inputs_dir / "input_2" / "objs.json"
-    params_file_path = main_outputs_dir / "output_1" / "params.json"
+    params_file_path = main_outputs_dir / "output_1" / "caller.json"
+    objs_file_path = main_inputs_dir / "input_2" / "map.json"
 
     map_object = tools.maps.oSparcFileMap(params_file_path, objs_file_path)
 
