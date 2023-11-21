@@ -89,9 +89,16 @@ class oSparcFileMap:
             (task_id, params) for task_id, params in enumerate(params_set)
         ]
 
-        objs_set = self.map_transmitter.request_with_immediate_reply(
-            "map", timeout=10.0, params={"params_list": payload}
+        request_id = self.map_transmitter.request_with_delayed_reply(
+            "map", params={"params_list": payload}
         )
+
+        result_received = False
+        while not result_received:
+            result_received, objs_set = self.map_transmitter.check_for_reply(
+                request_id=request_id
+            )
+            time.sleep(POLLING_WAIT)
 
         logger.info(f"Evaluation results: {objs_set}")
 

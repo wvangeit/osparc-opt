@@ -65,9 +65,10 @@ class EvalEngine:
             action="eval",
             description="evaluate parameters and return objectives",
             params=[
+                oc.CommandParameter(name="task_id", description="task_id"),
                 oc.CommandParameter(name="params", description="parameters"),
             ],
-            command_type=oc.CommandType.WITH_IMMEDIATE_REPLY,
+            command_type=oc.CommandType.WITH_DELAYED_REPLY,
         )
 
         self.transmitter = oc.PairedTransmitter(
@@ -98,9 +99,11 @@ class EvalEngine:
             logger.debug(f"Engine {self.id} received command: {command}")
             if command.action == self.eval_manifest.action:
                 params = command.params["params"]
+                task_id = command.params["task_id"]
                 objs = run_eval(params)
                 self.transmitter.reply_to_command(
-                    request_id=command.request_id, payload=objs
+                    request_id=command.request_id,
+                    payload={"task_id": task_id, "objs": objs},
                 )
 
     def create_engine_file(self) -> None:

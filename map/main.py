@@ -8,7 +8,7 @@ import socket
 
 import osparc_control as oc
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Map")
 
 DEFAULT_POLLING_WAIT = 0.1  # seconds
@@ -53,6 +53,7 @@ class oSparcMap:
         self.engine_ids = []
         self.engine_transmitters = {}
         self.engine_listen_ports = {}
+        self.engine_request_ids = {}
         self.engine_submitted = {}
 
         # Task related
@@ -126,7 +127,7 @@ class oSparcMap:
                     name="params_list", description="parameters list"
                 ),
             ],
-            command_type=oc.CommandType.WITH_IMMEDIATE_REPLY,
+            command_type=oc.CommandType.WITH_DELAYED_REPLY,
         )
 
         self.caller_transmitter = self.start_transmitter(
@@ -218,9 +219,9 @@ class oSparcMap:
             objs.append(obj)
 
         self.caller_transmitter.reply_to_command(
-            request_id=self.map_request_id, payload=objs
+            request_id=self.caller_request_id, payload=objs
         )
-        self.map_request_id = None
+        self.caller_request_id = None
 
         self.finished_tasks = []
 
@@ -231,19 +232,42 @@ class oSparcMap:
                 and len(self.torun_tasks) != 0
             ):
                 task = self.torun_tasks.pop()
-                self.running_tasks.append(task)
+                self.submit_task(task, engine_id)
 
-                logger.debug(f"Submitting parameters: {task['payload']}")
+            elif self.engine_submitted[engine_id]:
+                self.receive_task(engine_id)
 
-                task[
-                    "result"
-                ] = engine_transmitter.request_with_immediate_reply(
-                    "eval", timeout=10.0, params={"params": task["payload"]}
-                )
+    def submit_task(self, task, engine_id):
+        self.running_tasks.append(task)
 
-                self.running_tasks.remove(task)
-                self.finished_tasks.append(task)
-                logger.debug(f"Received result {task} from")
+        logger.debug(f"Submitting parameters: {task['payload']}")
+
+        engine_transmitter = self.engine_transmitters[engine_id]
+
+        request_id = engine_transmitter.request_with_delayed_reply(
+            "eval",
+            params={"params": task["payload"], "task_id": task["task_id"]},
+        )
+        self.engine_request_ids[engine_id] = request_id
+        self.engine_submitted[engine_id] = True
+
+    def receive_task(self, engine_id):
+        request_id = self.engine_request_ids[engine_id]
+        have_received, result = self.engine_transmitters[
+            engine_id
+        ].check_for_reply(request_id)
+        if have_received:
+            task_found = False
+            for task in self.running_tasks:
+                if task["task_id"] == result["task_id"]:
+                    task["result"] = result["objs"]
+                    self.running_tasks.remove(task)
+                    self.finished_tasks.append(task)
+                    self.engine_request_ids.pop(engine_id)
+                    self.engine_submitted[engine_id] = False
+                    logger.debug(f"Received result {task} from")
+                    task_found = True
+            assert task_found
 
     def check_caller_transmitter(self):
         if self.caller_transmitter is None:
@@ -253,7 +277,7 @@ class oSparcMap:
             logger.debug(f"Map received command: {command}")
             if command.action == self.map_manifest.action:
                 params_list = command.params["params_list"]
-                self.map_request_id = command.request_id
+                self.caller_request_id = command.request_id
                 self.status = "computing"
                 self.populate_tasklist(params_list)
 
