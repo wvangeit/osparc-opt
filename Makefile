@@ -31,7 +31,6 @@ iodirs: clean
 
 dakoptimizer: iodirs requirements
 	cd dakoptimizer && \
-	module load litis/dakota && \
 	OSPARC_OPTIMIZER_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
