@@ -10,6 +10,8 @@ logger = logging.getLogger("ToolsMap")
 
 POLLING_WAIT = 0.1  # second
 
+from . import network
+
 
 class oSparcFileMap:
     def __init__(self, map_file_path, caller_file_path):
@@ -63,7 +65,7 @@ class oSparcFileMap:
         command_dict = {
             "command": "connect",
             "payload": {
-                "caller_host": socket.gethostname(),
+                "caller_host": network.get_osparc_hostname("optimizer"),
                 "caller_port": listen_port,
             },
         }

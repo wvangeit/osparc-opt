@@ -34,26 +34,31 @@ iodirs: clean
 dakoptimizer: iodirs requirements
 	cd dakoptimizer && \
 	module load litis/dakota && \
+	OSPARC_OPTIMIZER_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
 	python main.py
 bpoptimizer: iodirs requirements
 	cd bpoptimizer && \
+	OSPARC_OPTIMIZER_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/opt \
 	python main.py
 evaluator1: iodirs requirements
 	cd evaluator && \
+	OSPARC_EVALUATOR1_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/eval1 \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/eval1 \
-	python main.py
+	python evaluator1.py
 evaluator2: iodirs requirements
 	cd evaluator && \
+	OSPARC_EVALUATOR2_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/eval2 \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/eval2 \
-	python main.py
+	python evaluator2.py
 map: iodirs requirements
 	cd map && \
+	OSPARC_MAP_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/map \
 	DY_SIDECAR_PATH_OUTPUTS=../test-outputs/map \
 	python main.py 

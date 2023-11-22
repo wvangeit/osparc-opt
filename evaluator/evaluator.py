@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import pathlib
 import time
@@ -6,6 +7,9 @@ import uuid
 import logging
 import osparc_control as oc
 import socket
+
+sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
+import tools.network
 
 import bluepyopt.ephys as ephys
 
@@ -15,17 +19,18 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Evaluator")
 
 
-def main():
+def main(name):
     """Main."""
 
-    engine = EvalEngine()
+    engine = EvalEngine(name)
     engine.start()
 
 
 class EvalEngine:
-    def __init__(self, polling_wait=DEFAULT_POLLING_WAIT):
+    def __init__(self, name, polling_wait=DEFAULT_POLLING_WAIT):
         """Constructor."""
 
+        self.name = name
         self.id = str(uuid.uuid4())
         self.output1_dir = pathlib.Path(
             os.environ["DY_SIDECAR_PATH_OUTPUTS"]
@@ -118,7 +123,7 @@ class EvalEngine:
             "id": self.id,
             "status": "connecting",
             "payload": {
-                "engine_host": socket.gethostname(),
+                "engine_host": tools.network.get_osparc_hostname(self.name),
                 "engine_port": self.listen_port,
             },
         }

@@ -1,4 +1,5 @@
 import os
+import sys
 import pathlib
 import json
 import time
@@ -12,6 +13,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("Map")
 
 DEFAULT_POLLING_WAIT = 0.1  # seconds
+
+sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
+import tools.network
 
 
 def main():
@@ -319,7 +323,7 @@ class oSparcMap:
             "task": {
                 "command": "connect",
                 "payload": {
-                    "master_host": socket.gethostname(),
+                    "master_host": tools.network.get_osparc_hostname("map"),
                     "master_port": listen_port,
                 },
             }
@@ -367,7 +371,7 @@ class oSparcMap:
         map_dict = {
             "status": "connecting",
             "payload": {
-                "map_host": socket.gethostname(),
+                "map_host": tools.network.get_osparc_hostname("map"),
                 "map_port": self.map_listen_port,
             },
         }
