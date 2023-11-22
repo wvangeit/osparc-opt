@@ -6,8 +6,6 @@ test-dak: map evaluator1 evaluator2 dakoptimizer
 
 test-bp: map evaluator1 evaluator2 bpoptimizer
 
-test-control: map evaluator1 evaluator2 bpoptimizer
-
 iodirs: clean
 	mkdir -p test-inputs
 	mkdir -p test-outputs

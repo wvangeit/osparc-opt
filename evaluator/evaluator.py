@@ -194,6 +194,8 @@ class EvalEngine:
 
 
 def run_eval(input_params):
+
+    logger.info(f"Running evaluation of {input_params}")
     logger.debug("Starting simplecell")
 
     logger.debug("I am running in the directory: ", os.getcwd())

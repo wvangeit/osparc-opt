@@ -15,10 +15,10 @@ def main():
     main_inputs_dir = Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
     main_outputs_dir = Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
 
-    params_file_path = main_outputs_dir / "output_1" / "caller.json"
-    objs_file_path = main_inputs_dir / "input_2" / "map.json"
+    caller_file_path = main_outputs_dir / "output_1" / "caller.json"
+    map_file_path = main_inputs_dir / "input_2" / "map.json"
 
-    map_object = tools.maps.oSparcFileMap(params_file_path, objs_file_path)
+    map_object = tools.maps.oSparcFileMap(map_file_path, caller_file_path)
 
     def map_function(dak_inputs):
         param_sets = [dak_input["cv"] for dak_input in dak_inputs]
