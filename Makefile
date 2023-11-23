@@ -1,5 +1,7 @@
 SHELL:=/bin/bash
 
+MAKEFLAGS += -j
+
 all: 
 
 test-dak: map evaluator1 evaluator2 dakoptimizer
@@ -66,5 +68,6 @@ requirements:
 clean:
 	rm -rf test-inputs
 	rm -rf test-outputs
-	rm -rf dakoptimizer/params.dak.in
-	rm -rf dakoptimizer/params.dak.out
+	rm -rf dakoptimizer/finaldata1.dat dakoptimizer/JEGAGlobal.log  dakoptimizer/discards.dat
+	rm -rf dakoptimizer/dakota.rst dakoptimizer/opt.dat dakoptimizer/__pycache__
+	
