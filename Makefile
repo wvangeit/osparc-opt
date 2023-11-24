@@ -8,6 +8,10 @@ test-dak: map evaluator1 evaluator2 dakoptimizer
 
 test-bp: map evaluator1 evaluator2 bpoptimizer
 
+plot:
+	cd dakoptimizer && \
+		python plot_surr.py
+
 iodirs: clean
 	mkdir -p test-inputs
 	mkdir -p test-outputs
@@ -68,6 +72,6 @@ requirements:
 clean:
 	rm -rf test-inputs
 	rm -rf test-outputs
-	rm -rf dakoptimizer/finaldata1.dat dakoptimizer/JEGAGlobal.log  dakoptimizer/discards.dat
+	rm -rf dakoptimizer/finaldata*.dat dakoptimizer/JEGAGlobal.log  dakoptimizer/discards.dat
 	rm -rf dakoptimizer/dakota.rst dakoptimizer/opt.dat dakoptimizer/__pycache__
-	
+	rm -rf dakoptimizer/LHS_* dakoptimizer/fort*
