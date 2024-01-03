@@ -14,16 +14,16 @@ method
     surrogate_based_global                                                                                                                                      
         model_pointer = 'SURR_MODEL'                                                                                                                            
         method_pointer = 'MOGA'                                                                                                                                 
-        max_iterations = 50                                                                                                                                     
+        max_iterations = 5                                                                                                                                     
     output debug   
 
 method
     id_method = "MOGA"
     moga
         population_size
-            500
+            10
         max_function_evaluations
-            1000
+            20
         scaling
     output debug
     seed = 1234
