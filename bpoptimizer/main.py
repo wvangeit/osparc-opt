@@ -17,15 +17,15 @@ POLLING_WAIT = 0.1  # second
 
 
 def main():
-    """Main"""
+    """Main."""
 
     main_inputs_dir = Path(os.environ["DY_SIDECAR_PATH_INPUTS"])
     main_outputs_dir = Path(os.environ["DY_SIDECAR_PATH_OUTPUTS"])
 
-    objs_file_path = main_inputs_dir / "input_2" / "objs.json"
-    params_file_path = main_outputs_dir / "output_1" / "params.json"
+    map_file_path = main_inputs_dir / "input_2" / "map.json"
+    caller_file_path = main_outputs_dir / "output_1" / "caller.json"
 
-    map_object = tools.maps.oSparcFileMap(params_file_path, objs_file_path)
+    map_object = tools.maps.oSparcFileMap(map_file_path, caller_file_path)
     map_function = map_object.map_function
 
     optimizer = Optimizer(map=map_function)
@@ -35,10 +35,8 @@ def main():
 
 
 class DummyEvaluator(bpopt.evaluators.Evaluator):
-    """
-    This evaluator is only made to pass to bpopt, evaluations are
-    intercepted by the map
-    """
+    """This evaluator is only made to pass to bpopt, evaluations are
+    intercepted by the map."""
 
     def init_simulator_and_evaluate_with_lists(
         self, param_list=None, target="scores"
@@ -46,7 +44,7 @@ class DummyEvaluator(bpopt.evaluators.Evaluator):
         return self.evaluate_with_lists(param_list=param_list, target=target)
 
     def evaluate_with_lists(self, param_list=None, target="scores"):
-        """Run evaluation with lists as input and outputs"""
+        """Run evaluation with lists as input and outputs."""
 
         print(f"Evaluating with lists: {param_list}")
 

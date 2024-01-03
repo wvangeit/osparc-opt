@@ -8,19 +8,51 @@ environment
         hdf5
         interface_selection
             all
-      
+
+method                                                                                                                                                          
+    id_method = 'SURR_OPT'                                                                                                                                           
+    surrogate_based_global                                                                                                                                      
+        model_pointer = 'SURR_MODEL'                                                                                                                            
+        method_pointer = 'MOGA'                                                                                                                                 
+        max_iterations = 5                                                                                                                                     
+    output debug   
+
 method
+    id_method = "MOGA"
     moga
-        max_function_evaluations 50
-        population_size 
+        population_size
             10
+        max_function_evaluations
+            20
         scaling
     output debug
+    seed = 1234
 
-model
-    single
+model                                                                                                                                                           
+    id_model = 'SURR_MODEL'                                                                                                                                     
+    surrogate global                                                                                                                                            
+        dace_method_pointer = 'SAMPLING'
+        gaussian_process                                                                                                                                            
+            dakota
+
+method                                                                                                                                                          
+    id_method = 'SAMPLING'                                                                                                                                      
+    model_pointer = 'TRUE_MODEL'
+    sample_type
+        lhs                                                                                                                                
+    sampling                                                                                                                                                    
+        samples = 10                                                                                                                                             
+    seed = 1234
+
+model                                                                                                                                                           
+    id_model = 'TRUE_MODEL'                                                                                                                                     
+    single                                                                                                                                                      
+        interface_pointer = 'INTERFACE'                                                                                                                                
+        variables_pointer = 'VARIABLES'                                                                                                                                
+        responses_pointer = 'RESPONSES'
 
 variables
+    id_variables = 'VARIABLES'
     continuous_design
         2
         lower_bounds     
@@ -34,19 +66,14 @@ variables
             'x1'
 
 interface
+    id_interface = 'INTERFACE'
     batch
     python
     analysis_driver
         "map"
-    # analysis_drivers
-    #    "driver.py settings.json"
-    #    fork
-    #    parameters_file
-    #        "params.dak.in"
-    #    results_file
-    #        "objs.dak.out"
 
 responses
+    id_responses = 'RESPONSES'
     objective_functions
         2
         descriptors
