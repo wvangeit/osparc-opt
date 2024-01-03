@@ -1,3 +1,6 @@
 test-inputs
 test-outputs
 __pycache__
+LHS_*
+finaldata*.dat
+fort.*
