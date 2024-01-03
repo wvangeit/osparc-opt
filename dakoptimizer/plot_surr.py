@@ -38,8 +38,8 @@ for iteration in range(1, 50):
     axes[0].plot(abs(merged["f1"] - merged["f1truth"]), label=iteration)
     axes[1].plot(abs(merged["f2"] - merged["f2truth"]), label=iteration)
 
-    rms_f1.append(((merged.f1 - merged.f1truth) ** 2).mean() ** .5)
-    rms_f2.append(((merged.f2 - merged.f2truth) ** 2).mean() ** .5)
+    rms_f1.append(((merged.f1 - merged.f1truth) ** 2).mean() ** 0.5)
+    rms_f2.append(((merged.f2 - merged.f2truth) ** 2).mean() ** 0.5)
     # plt.scatter((data["f1"], data["f2"]), "o")
 
 for ax in axes:
@@ -48,8 +48,8 @@ for ax in axes:
     ax.legend()
     # ax.get_legend().remove()
 
-axes_rms.plot(rms_f1, label='f1')
-axes_rms.plot(rms_f2, label='f2')
+axes_rms.plot(rms_f1, label="f1")
+axes_rms.plot(rms_f2, label="f2")
 
 for ax in [axes_rms]:
     ax.set_yscale("log")

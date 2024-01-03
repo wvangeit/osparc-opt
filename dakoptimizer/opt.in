@@ -21,9 +21,9 @@ method
     id_method = "MOGA"
     moga
         population_size
-            50
+            500
         max_function_evaluations
-            100
+            1000
         scaling
     output debug
     seed = 1234
@@ -32,8 +32,6 @@ model
     id_model = 'SURR_MODEL'                                                                                                                                     
     surrogate global                                                                                                                                            
         dace_method_pointer = 'SAMPLING'
-        cross_validation folds = 5
-        metrics 'mean_abs'                                                                                                                            
         gaussian_process                                                                                                                                            
             dakota
 
@@ -43,7 +41,7 @@ method
     sample_type
         lhs                                                                                                                                
     sampling                                                                                                                                                    
-        samples = 100                                                                                                                                             
+        samples = 10                                                                                                                                             
     seed = 1234
 
 model                                                                                                                                                           
