@@ -36,6 +36,7 @@ iodirs: clean
 	ln -rfs test-outputs/eval2/output_1 test-inputs/map/input_4
 
 dakoptimizer: iodirs requirements
+	cp testdata/output_tasks.json test-outputs/map/output_2
 	cd dakoptimizer && \
 	OSPARC_OPTIMIZER_HOSTNAME=localhost \
 	DY_SIDECAR_PATH_INPUTS=../test-inputs/opt \

@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("ToolsMap")
 
 POLLING_WAIT = 1  # second
+DISABLE_UUID_CHECK_STRING = "DISABLE_UUID_CHECK"
 
 
 class oSparcFileMap:
@@ -40,8 +41,21 @@ class oSparcFileMap:
 
         return payload
 
-    def read_map_output_payload(self, task_uuid, map_output_payload):
-        return map_output_payload
+    def read_map_output_payload(self, map_output_payload):
+        tasks = map_output_payload["tasks"]
+
+        objs_sets = []
+
+        for task in tasks:
+            if task["status"] != "SUCCESS":
+                raise Exception(f"A task was not succesful: {task}")
+
+            task_output = task["output"]
+
+            objs_set = task_output["OutputFile1"]["value"]
+            objs_sets.append(objs_set)
+
+        return objs_sets
 
     def evaluate(self, params_set):
         logger.info(f"Evaluating: {params_set}")
@@ -62,6 +76,8 @@ class oSparcFileMap:
                 payload_uuid = json.loads(self.map_file_path.read_text())[
                     "uuid"
                 ]
+                if payload_uuid == DISABLE_UUID_CHECK_STRING:
+                    break
                 if waiter % 10 == 0:
                     logger.info(
                         f"Waiting for tasks uuid to match: payload:{payload_uuid} tasks:{tasks_uuid}"
