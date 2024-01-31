@@ -1,16 +1,12 @@
 import time
 import json
+import uuid
 import logging
-import socket
-
-import osparc_control as oc
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("ToolsMap")
 
-POLLING_WAIT = 0.1  # second
-
-from . import network
+POLLING_WAIT = 1  # second
 
 
 class oSparcFileMap:
@@ -18,89 +14,58 @@ class oSparcFileMap:
         logger.info("Creating caller map")
         self.caller_file_path = caller_file_path
         self.map_file_path = map_file_path
-        self.status = "connecting"
-        self.map_transmitter = None
 
-        poll_counter = 0
-        while True:
-            if self.map_file_path.exists():
-                map_info = json.loads(self.map_file_path.read_text())
-                if (
-                    map_info["status"] == "connecting"
-                    and self.status == "connecting"
-                ):
-                    payload = map_info["payload"]
-                    map_host = payload["map_host"]
-                    map_port = payload["map_port"]
-                    self.start_map_transmitter(map_host, map_port)
-                    self.status = "running"
-                    break
-                else:
-                    raise ValueError(
-                        f"Got wrong status from map at start: "
-                        f"{map_info['status']}"
-                    )
+    def create_map_input_payload(self, tasks_uuid, params_sets):
+        payload = {}
+        payload["uuid"] = tasks_uuid
+        payload["tasks"] = []
 
-            time.sleep(POLLING_WAIT)
-            poll_counter += 1
+        for param_set in params_sets:
+            task = {}
+            task_input = task["input"] = {}
+            task_output = task["output"] = {}
 
-    def start_map_transmitter(self, remote_host, remote_port):
-        tmp_sock = socket.socket()
-        tmp_sock.bind(("", 0))
-        listen_port = tmp_sock.getsockname()[1]
-        tmp_sock.close()
+            task_input["InputFile1"] = {
+                "type": "FileJSON",
+                "filename": "input.json",
+                "value": param_set,
+            }
+            task_output["OutputFile1"] = {
+                "type": "FileJSON",
+                "filename": "output.json",
+            }
 
-        self.map_transmitter = self.start_transmitter(
-            listen_port, remote_host, remote_port
-        )
+            payload["tasks"].append(task)
 
-        self.connect_map(listen_port)
+        return payload
 
-        logging.info(
-            "Map caller set up transmitter to listen to port "
-            f"{listen_port} for messages from {remote_host}:{remote_port}"
-        )
-
-    def connect_map(self, listen_port):
-        command_dict = {
-            "command": "connect",
-            "payload": {
-                "caller_host": network.get_osparc_hostname("optimizer"),
-                "caller_port": listen_port,
-            },
-        }
-
-        self.caller_file_path.write_text(json.dumps(command_dict, indent=4))
-
-    def start_transmitter(self, listen_port, remote_host, remote_port):
-        transmitter = oc.PairedTransmitter(
-            remote_host=remote_host,
-            exposed_commands=[],
-            remote_port=remote_port,
-            listen_port=listen_port,
-        )
-
-        transmitter.start_background_sync()
-
-        return transmitter
+    def read_map_output_payload(self, map_output_payload):
+        return map_output_payload
 
     def evaluate(self, params_set):
         logger.info(f"Evaluating: {params_set}")
 
-        payload = [
-            (task_id, params) for task_id, params in enumerate(params_set)
-        ]
-
-        request_id = self.map_transmitter.request_with_delayed_reply(
-            "map", params={"params_list": payload}
+        tasks_uuid = str(uuid.uuid4())
+        map_input_payload = self.create_map_input_payload(
+            tasks_uuid, params_set
         )
 
-        result_received = False
-        while not result_received:
-            result_received, objs_set = self.map_transmitter.check_for_reply(
-                request_id=request_id
-            )
+        self.caller_file_path.write_text(
+            json.dumps(map_input_payload, indent=4)
+        )
+
+        waiter = 0
+        while not self.map_file_path.exists():
+            if waiter % 10 == 0:
+                logger.info(
+                    f"Waiting for map results at: {self.map_file_path.resolve()}"
+                )
             time.sleep(POLLING_WAIT)
+            waiter += 1
+
+        map_output_payload = json.loads(self.map_file_path.read_text())
+
+        objs_set = self.read_map_output_payload(map_output_payload)
 
         logger.info(f"Evaluation results: {objs_set}")
 
@@ -114,8 +79,6 @@ class oSparcFileMap:
 
     def __del__(self):
         payload = {"command": "stop"}
-        if self.map_transmitter is not None:
-            self.map_transmitter.stop_background_sync()
 
         self.caller_file_path.write_text(json.dumps(payload, indent=4))
 
