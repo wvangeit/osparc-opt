@@ -21,7 +21,7 @@ method
     id_method = "MOGA"
     moga
         population_size
-            10
+            3
         max_function_evaluations
             20
         scaling
@@ -41,7 +41,7 @@ method
     sample_type
         lhs                                                                                                                                
     sampling                                                                                                                                                    
-        samples = 10                                                                                                                                             
+        samples = 3                                                                                                                                             
     seed = 1234
 
 model                                                                                                                                                           
