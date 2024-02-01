@@ -80,7 +80,7 @@ class oSparcFileMap:
             waiter_file = 0
             while not self.handshake_input_path.exists():
                 if waiter_file % 10 == 0:
-                    logger.info("Waiting for handshake file...")
+                    logger.info(f"Waiting for handshake file at {self.handshake_input_path} ...")
                 time.sleep(self.polling_interval)
                 waiter_file += 1
 
