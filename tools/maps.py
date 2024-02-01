@@ -95,6 +95,7 @@ class oSparcFileMap:
             if command == "register":
                 map_uuid = handshake_in["uuid"]
                 if map_uuid != last_written_map_uuid:
+                    self.handshake_output_path.unlink()
                     handshake_out = {
                         "type": "map",
                         "command": "confirm_registration",
