@@ -6,7 +6,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("ToolsMap")
 
-POLLING_WAIT = 1  # second
+POLLING_WAIT = 5  # second
 DISABLE_UUID_CHECK_STRING = "DISABLE_UUID_CHECK"
 
 
