@@ -15,6 +15,9 @@ class oSparcFileMap:
         self, map_file_path, caller_file_path, polling_interval=POLLING_WAIT
     ):
         logger.info("Creating caller map")
+        self.uuid = str(uuid.uuid4())
+        logger.info(f"Map uuid is {self.uuid}")
+        self.map_uuid = None
 
         self.polling_interval = polling_interval
         self.caller_file_path = caller_file_path
@@ -26,8 +29,8 @@ class oSparcFileMap:
         self.handshake_output_path = (
             self.caller_file_path.parent / "handshake.json"
         )
-        self.handshake_output_path.unlink()
-        self.uuid = str(uuid.uuid4())
+        if self.handshake_output_path.exists():
+            self.handshake_output_path.unlink()
 
         self.perform_handshake()
 
@@ -95,7 +98,8 @@ class oSparcFileMap:
             if command == "register":
                 map_uuid = handshake_in["uuid"]
                 if map_uuid != last_written_map_uuid:
-                    self.handshake_output_path.unlink()
+                    if self.handshake_output_path.exists():
+                        self.handshake_output_path.unlink()
                     handshake_out = {
                         "type": "map",
                         "command": "confirm_registration",
