@@ -11,10 +11,24 @@ DISABLE_UUID_CHECK_STRING = "DISABLE_UUID_CHECK"
 
 
 class oSparcFileMap:
-    def __init__(self, map_file_path, caller_file_path):
+    def __init__(
+        self, map_file_path, caller_file_path, polling_interval=POLLING_WAIT
+    ):
         logger.info("Creating caller map")
+
+        self.polling_interval = polling_interval
         self.caller_file_path = caller_file_path
         self.map_file_path = map_file_path
+
+        self.handshake_input_path = (
+            self.map_file_path.parent / "handshake.json"
+        )
+        self.handshake_output_path = (
+            self.caller_file_path.parent / "handshake.json"
+        )
+        self.uuid = str(uuid.uuid4())
+
+        self.perform_handshake()
 
     def create_map_input_payload(self, tasks_uuid, params_sets):
         payload = {}
@@ -56,6 +70,48 @@ class oSparcFileMap:
             objs_sets.append(objs_set)
 
         return objs_sets
+
+    def perform_handshake(self):
+        """Perform handshake with caller"""
+
+        map_uuid = ""
+        waiter = 0
+        while True:
+            waiter_file = 0
+            while not self.handshake_input_path.exists():
+                if waiter_file % 10 == 0:
+                    logger.info("Waiting for handshake file...")
+                time.sleep(self.polling_interval)
+                waiter_file += 1
+
+            handshake_in = json.loads(self.handshake_input_path.read_text())
+            command = handshake_in["command"]
+            if command == "register":
+                map_uuid = handshake_in["uuid"]
+            elif (
+                command == "confirm_registration"
+                and map_uuid != ""
+                and handshake_in["uuid"] == map_uuid
+                and handshake_in["confirmed_uuid"] == self.uuid
+            ):
+                break
+            else:
+                raise ValueError(f"Invalid handshake command: {command}")
+
+            handshake_out = {
+                "type": "map",
+                "command": "confirm_registration",
+                "uuid": self.uuid,
+                "confirmed_uuid": map_uuid,
+            }
+            self.handshake_output_path.write_text(json.dumps(handshake_out))
+
+            if waiter % 10 == 0:
+                logger.info("Waiting for handshake file...")
+            time.sleep(self.polling_interval)
+            waiter += 1
+
+        return map_uuid
 
     def evaluate(self, params_set):
         logger.info(f"Evaluating: {params_set}")
