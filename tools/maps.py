@@ -77,7 +77,8 @@ class oSparcFileMap:
     def perform_handshake(self):
         """Perform handshake with caller"""
 
-        map_uuid = ""
+        map_uuid = None
+        last_written_map_uuid = None
         waiter = 0
         while True:
             waiter_file = 0
@@ -93,16 +94,20 @@ class oSparcFileMap:
             command = handshake_in["command"]
             if command == "register":
                 map_uuid = handshake_in["uuid"]
-                handshake_out = {
-                    "type": "map",
-                    "command": "confirm_registration",
-                    "uuid": self.uuid,
-                    "confirmed_uuid": map_uuid,
-                }
-                self.handshake_output_path.write_text(json.dumps(handshake_out))
+                if map_uuid != last_written_map_uuid:
+                    handshake_out = {
+                        "type": "map",
+                        "command": "confirm_registration",
+                        "uuid": self.uuid,
+                        "confirmed_uuid": map_uuid,
+                    }
+                    self.handshake_output_path.write_text(
+                        json.dumps(handshake_out)
+                    )
+                    last_written_map_uuid = map_uuid
             elif command == "confirm_registration":
                 if (
-                    map_uuid != ""
+                    map_uuid is not None
                     and handshake_in["uuid"] == map_uuid
                     and handshake_in["confirmed_uuid"] == self.uuid
                 ):
@@ -114,6 +119,8 @@ class oSparcFileMap:
                 logger.info("Waiting for registration confirmation...")
             time.sleep(self.polling_interval)
             waiter += 1
+
+        assert map_uuid is not None
 
         return map_uuid
 
