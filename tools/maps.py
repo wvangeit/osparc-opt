@@ -34,6 +34,7 @@ class oSparcFileMap:
         payload = {}
         payload["uuid"] = tasks_uuid
         payload["caller_uuid"] = self.uuid
+        payload["map_uuid"] = self.map_uuid
         payload["command"] = "run"
         payload["tasks"] = []
 
@@ -164,7 +165,11 @@ class oSparcFileMap:
         return self.evaluate(params)
 
     def __del__(self):
-        payload = {"command": "stop", "caller_uuid": self.uuid}
+        payload = {
+            "command": "stop",
+            "caller_uuid": self.uuid,
+            "map_uuid": self.map_uuid,
+        }
 
         self.caller_file_path.write_text(json.dumps(payload, indent=4))
 
