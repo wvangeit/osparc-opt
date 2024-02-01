@@ -92,6 +92,13 @@ class oSparcFileMap:
             command = handshake_in["command"]
             if command == "register":
                 map_uuid = handshake_in["uuid"]
+                handshake_out = {
+                    "type": "map",
+                    "command": "confirm_registration",
+                    "uuid": self.uuid,
+                    "confirmed_uuid": map_uuid,
+                }
+                self.handshake_output_path.write_text(json.dumps(handshake_out))
             elif command == "confirm_registration":
                 if (
                     map_uuid != ""
@@ -102,16 +109,8 @@ class oSparcFileMap:
             else:
                 raise ValueError(f"Invalid handshake command: {command}")
 
-            handshake_out = {
-                "type": "map",
-                "command": "confirm_registration",
-                "uuid": self.uuid,
-                "confirmed_uuid": map_uuid,
-            }
-            self.handshake_output_path.write_text(json.dumps(handshake_out))
-
             if waiter % 10 == 0:
-                logger.info("Waiting for handshake file...")
+                logger.info("Waiting for registration confirmation...")
             time.sleep(self.polling_interval)
             waiter += 1
 
