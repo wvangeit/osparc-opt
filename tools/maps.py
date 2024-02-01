@@ -26,6 +26,7 @@ class oSparcFileMap:
         self.handshake_output_path = (
             self.caller_file_path.parent / "handshake.json"
         )
+        self.handshake_output_path.unlink()
         self.uuid = str(uuid.uuid4())
 
         self.perform_handshake()
