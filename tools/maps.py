@@ -80,7 +80,9 @@ class oSparcFileMap:
             waiter_file = 0
             while not self.handshake_input_path.exists():
                 if waiter_file % 10 == 0:
-                    logger.info(f"Waiting for handshake file at {self.handshake_input_path} ...")
+                    logger.info(
+                        f"Waiting for handshake file at {self.handshake_input_path} ..."
+                    )
                 time.sleep(self.polling_interval)
                 waiter_file += 1
 
@@ -88,13 +90,13 @@ class oSparcFileMap:
             command = handshake_in["command"]
             if command == "register":
                 map_uuid = handshake_in["uuid"]
-            elif (
-                command == "confirm_registration"
-                and map_uuid != ""
-                and handshake_in["uuid"] == map_uuid
-                and handshake_in["confirmed_uuid"] == self.uuid
-            ):
-                break
+            elif command == "confirm_registration":
+                if (
+                    map_uuid != ""
+                    and handshake_in["uuid"] == map_uuid
+                    and handshake_in["confirmed_uuid"] == self.uuid
+                ):
+                    break
             else:
                 raise ValueError(f"Invalid handshake command: {command}")
 
