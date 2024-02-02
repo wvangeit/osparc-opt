@@ -27,14 +27,17 @@ class oSparcFileMap:
         self.caller_file_path = caller_file_path
         self.map_file_path = map_file_path
 
-        self.handshake_input_path = self.map_file_path.parent / "handshake.json"
+        self.handshake_input_path = (
+            self.map_file_path.parent / "handshake.json"
+        )
         self.handshake_output_path = (
             self.caller_file_path.parent / "handshake.json"
         )
         if self.handshake_output_path.exists():
             self.handshake_output_path.unlink()
 
-        self.map_uuid = self.perform_handshake()
+        # self.map_uuid = self.perform_handshake()
+        self.map_uuid = None
 
     def create_map_input_payload(self, tasks_uuid, params_sets):
         payload = {}

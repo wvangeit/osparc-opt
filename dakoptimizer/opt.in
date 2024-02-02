@@ -4,9 +4,6 @@ environment
     tabular_data
         tabular_data_file
             "opt.dat"
-    results_output
-        interface_selection
-            all
 
 method                                                                                                                                                          
     id_method = 'SURR_OPT'                                                                                                                                           
