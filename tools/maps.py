@@ -16,8 +16,7 @@ class oSparcFileMap:
     ):
         logger.info("Creating caller map")
         self.uuid = str(uuid.uuid4())
-        logger.info(f"Map uuid is {self.uuid}")
-        self.map_uuid = None
+        logger.info(f"Optimizer uuid is {self.uuid}")
 
         self.polling_interval = polling_interval
         self.caller_file_path = caller_file_path
@@ -32,7 +31,7 @@ class oSparcFileMap:
         if self.handshake_output_path.exists():
             self.handshake_output_path.unlink()
 
-        self.perform_handshake()
+        self.map_uuid = self.perform_handshake()
 
     def create_map_input_payload(self, tasks_uuid, params_sets):
         payload = {}
