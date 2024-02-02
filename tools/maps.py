@@ -2,6 +2,7 @@ import time
 import json
 import uuid
 import logging
+import pathlib as pl
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("ToolsMap")
@@ -12,19 +13,21 @@ DISABLE_UUID_CHECK_STRING = "DISABLE_UUID_CHECK"
 
 class oSparcFileMap:
     def __init__(
-        self, map_file_path, caller_file_path, polling_interval=POLLING_WAIT
-    ):
+        self,
+        map_file_path: pl.Path,
+        caller_file_path: pl.Path,
+        polling_interval: float = POLLING_WAIT,
+    ) -> None:
         logger.info("Creating caller map")
         self.uuid = str(uuid.uuid4())
         logger.info(f"Optimizer uuid is {self.uuid}")
 
         self.polling_interval = polling_interval
+
         self.caller_file_path = caller_file_path
         self.map_file_path = map_file_path
 
-        self.handshake_input_path = (
-            self.map_file_path.parent / "handshake.json"
-        )
+        self.handshake_input_path = self.map_file_path.parent / "handshake.json"
         self.handshake_output_path = (
             self.caller_file_path.parent / "handshake.json"
         )
@@ -158,7 +161,7 @@ class oSparcFileMap:
                     logger.info(
                         f"Waiting for map results at: {self.map_file_path.resolve()}"
                     )
-            time.sleep(POLLING_WAIT)
+            time.sleep(self.polling_interval)
             waiter += 1
 
         map_output_payload = json.loads(self.map_file_path.read_text())

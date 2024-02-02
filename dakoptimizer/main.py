@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+import shutil
+import pathlib as pl
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,6 +19,8 @@ def main():
 
     caller_file_path = main_outputs_dir / "output_1" / "input_tasks.json"
     map_file_path = main_inputs_dir / "input_2" / "output_tasks.json"
+
+    results_dir_path = main_inputs_dir / "output_2"
 
     map_object = tools.maps.oSparcFileMap(map_file_path, caller_file_path)
 
@@ -36,6 +40,9 @@ def main():
     study = dakenv.study(callbacks=callbacks, input_string=opt_in)
 
     study.execute()
+
+    for file in pl.Path(".").glob(["*.rst", "*.log", "*.dat"]):
+        shutil.copy(file, results_dir_path)
 
 
 if __name__ == "__main__":
