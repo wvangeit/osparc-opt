@@ -41,8 +41,9 @@ def main():
 
     study.execute()
 
-    for file in pl.Path(".").glob(["*.rst", "*.log", "*.dat"]):
-        shutil.copy(file, results_dir_path)
+    for pattern in [f"*.{extension}" for extension in ["rst", "dat", "log"]]:
+        for file in pl.Path(".").glob(pattern):
+            shutil.copy(file, results_dir_path)
 
 
 if __name__ == "__main__":
