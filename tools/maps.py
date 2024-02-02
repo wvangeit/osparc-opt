@@ -36,8 +36,7 @@ class oSparcFileMap:
         if self.handshake_output_path.exists():
             self.handshake_output_path.unlink()
 
-        # self.map_uuid = self.perform_handshake()
-        self.map_uuid = None
+        self.map_uuid = self.perform_handshake()
 
     def create_map_input_payload(self, tasks_uuid, params_sets):
         payload = {}
