@@ -20,7 +20,7 @@ def main():
     caller_file_path = main_outputs_dir / "output_1" / "input_tasks.json"
     map_file_path = main_inputs_dir / "input_2" / "output_tasks.json"
 
-    results_dir_path = main_inputs_dir / "output_2"
+    results_dir_path = main_outputs_dir / "output_2"
 
     map_object = tools.maps.oSparcFileMap(map_file_path, caller_file_path)
 
