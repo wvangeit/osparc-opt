@@ -42,7 +42,11 @@ def main():
     study.execute()
 
     for pattern in [f"*.{extension}" for extension in ["rst", "dat", "log"]]:
+        logging.info(f"Preparing to copy pattern files to {results_dir_path}")
         for file in pl.Path(".").glob(pattern):
+            logging.info(
+                f"Copying file {file.resolve()} to {results_dir_path}"
+            )
             shutil.copy(file, results_dir_path)
 
 

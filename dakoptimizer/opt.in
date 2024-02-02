@@ -11,7 +11,7 @@ method
         model_pointer = 'SURR_MODEL'                                                                                                                            
         method_pointer = 'MOGA'                                                                                                                                 
         max_iterations = 5                                                                                                                                     
-    output debug   
+    output normal  
 
 method
     id_method = "MOGA"
@@ -21,7 +21,7 @@ method
         max_function_evaluations
             20
         scaling
-    output debug
+    output normal
     seed = 1234
 
 model                                                                                                                                                           
