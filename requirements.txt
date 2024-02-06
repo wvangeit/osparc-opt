@@ -1,3 +1,2 @@
-bluepyopt
-osparc_control
+osparc_filecomms==0.9.dev5
 itis-dakota

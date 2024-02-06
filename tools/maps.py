@@ -4,6 +4,8 @@ import uuid
 import logging
 import pathlib as pl
 
+from osparc_filecomms import handshakers
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("ToolsMap")
 
@@ -20,6 +22,7 @@ class oSparcFileMap:
     ) -> None:
         logger.info("Creating caller map")
         self.uuid = str(uuid.uuid4())
+        self.map_uuid = None
         logger.info(f"Optimizer uuid is {self.uuid}")
 
         self.polling_interval = polling_interval
@@ -27,16 +30,14 @@ class oSparcFileMap:
         self.caller_file_path = caller_file_path
         self.map_file_path = map_file_path
 
-        self.handshake_input_path = (
-            self.map_file_path.parent / "handshake.json"
+        self.handshaker = handshakers.FileHandshaker(
+            self.uuid,
+            self.map_file_path.parent,
+            self.caller_file_path.parent,
+            is_initiator=False,
+            verbose_level=logging.DEBUG,
         )
-        self.handshake_output_path = (
-            self.caller_file_path.parent / "handshake.json"
-        )
-        if self.handshake_output_path.exists():
-            self.handshake_output_path.unlink()
-
-        self.map_uuid = self.perform_handshake()
+        self.map_uuid = self.handshaker.shake()
 
     def create_map_input_payload(self, tasks_uuid, params_sets):
         payload = {}
@@ -80,58 +81,6 @@ class oSparcFileMap:
             objs_sets.append(objs_set)
 
         return objs_sets
-
-    def perform_handshake(self):
-        """Perform handshake with caller"""
-
-        map_uuid = None
-        last_written_map_uuid = None
-        waiter = 0
-        while True:
-            waiter_file = 0
-            while not self.handshake_input_path.exists():
-                if waiter_file % 10 == 0:
-                    logger.info(
-                        f"Waiting for handshake file at {self.handshake_input_path} ..."
-                    )
-                time.sleep(self.polling_interval)
-                waiter_file += 1
-
-            handshake_in = json.loads(self.handshake_input_path.read_text())
-            command = handshake_in["command"]
-            if command == "register":
-                map_uuid = handshake_in["uuid"]
-                if map_uuid != last_written_map_uuid:
-                    if self.handshake_output_path.exists():
-                        self.handshake_output_path.unlink()
-                    handshake_out = {
-                        "type": "map",
-                        "command": "confirm_registration",
-                        "uuid": self.uuid,
-                        "confirmed_uuid": map_uuid,
-                    }
-                    self.handshake_output_path.write_text(
-                        json.dumps(handshake_out)
-                    )
-                    last_written_map_uuid = map_uuid
-            elif command == "confirm_registration":
-                if (
-                    map_uuid is not None
-                    and handshake_in["uuid"] == map_uuid
-                    and handshake_in["confirmed_uuid"] == self.uuid
-                ):
-                    break
-            else:
-                raise ValueError(f"Invalid handshake command: {command}")
-
-            if waiter % 10 == 0:
-                logger.info("Waiting for registration confirmation...")
-            time.sleep(self.polling_interval)
-            waiter += 1
-
-        assert map_uuid is not None
-
-        return map_uuid
 
     def evaluate(self, params_set):
         logger.info(f"Evaluating: {params_set}")
