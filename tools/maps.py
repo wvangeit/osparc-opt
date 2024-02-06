@@ -28,6 +28,8 @@ class oSparcFileMap:
         self.polling_interval = polling_interval
 
         self.caller_file_path = caller_file_path
+        if self.caller_file_path.exists():
+            self.caller_file_path.unlink()
         self.map_file_path = map_file_path
 
         self.handshaker = handshakers.FileHandshaker(
