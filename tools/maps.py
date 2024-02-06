@@ -38,6 +38,8 @@ class oSparcFileMap:
             self.caller_file_path.parent,
             is_initiator=False,
             verbose_level=logging.DEBUG,
+            polling_interval=.1,
+            print_polling_interval=100
         )
         self.map_uuid = self.handshaker.shake()
 
