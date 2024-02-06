@@ -1,2 +1,2 @@
-osparc_filecomms==0.9.dev5
+osparc_filecomms==0.9.3.dev1
 itis-dakota
